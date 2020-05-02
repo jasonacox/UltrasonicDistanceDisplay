@@ -4,8 +4,13 @@ ATtiny85 Ultrasound Distance Measurement with Dual Segment LED Display
 ## Description
 This project uses the HC-SR04 ultrasonic distance module to determine distance and display the results via two 7-segment LED displays. The HC-SR04 provides readings from 2cm to 400cm (1in to 13ft).
 
-### Imperial Units
-The code is written to display distances in in inches (1 to 11) for distances less than 1 foot.  Once the distance reaches 1 foot, it will show feet in decimal (1.0 to 9.9) until the distance reaches 10 feet when it will display in feet only (e.g. 10). 
+### Imperial and SI Units
+In Imperial unit mode, the code is written to display distances in inches (1 to 11) for distances less than 1 foot.  Once the distance reaches 1 foot, it will show feet in decimal (1.0 to 9.9) until the distance reaches 10 feet when it will display in feet only (e.g. 10). 
+
+In SI unit mode, it will show centimeters for distances less than 1 meter, then it will show meters with decimal until the distance reaches 10 meters and will continue to show meters only.
+
+To toggle Units:  Hold the distance to 4 (either unit) for ~4 seconds and it will toggle between units.  Imperial mode will flash "in" and SI mode will flash "c".
+
 
 Components:
 * ATiny85 Microcontroller

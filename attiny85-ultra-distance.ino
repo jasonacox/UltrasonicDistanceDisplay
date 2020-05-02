@@ -4,7 +4,7 @@
   This project uses the HC-SR04 ultrasonic distance module to determine distance
   an provide output via two 7-segment display.  In Imperial unit mode, it will show inches
   for short distances less than 1 foot, then it will show feet with decimal until the distance
-  reaches 10 feet and will continue to show feet.  In SI uit mode, it will show centimeters
+  reaches 10 feet and will continue to show feet.  In SI unit mode, it will show centimeters
   for distances less than 1 meter, then it will show meters with decimal until the distance
   reaches 10 meters and will continue to show meters only.
 
