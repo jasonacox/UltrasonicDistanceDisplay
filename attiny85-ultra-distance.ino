@@ -2,19 +2,25 @@
   ATtiny85 Ultrasound Distance Measurement with Dual 7-Segment LED Display
 
   This project uses the HC-SR04 ultrasonic distance module to determine distance
-  an provide output via two 7-segment display.  It will show inches for short distances less
-  than 1 foot, then it will show feet with decimal until the distance reaches 10 feet and will
-  continue to show feet.  The HC-SR04 provides 2cm to 400cm (1in to 13ft) of non-contact
-  measurement functionality.
+  an provide output via two 7-segment display.  In Imperial unit mode, it will show inches
+  for short distances less than 1 foot, then it will show feet with decimal until the distance
+  reaches 10 feet and will continue to show feet.  In SI uit mode, it will show centimeters
+  for distances less than 1 meter, then it will show meters with decimal until the distance
+  reaches 10 meters and will continue to show meters only.
+
+  To toggle Units:  Hold the distance to 4 (either unit) for ~4 seconds and it will toggle
+  between units.  Imperial mode will flash "in" and SI mode will flash "c".
+
+  The HC-SR04 provides 2cm to 400cm (1in to 13ft) of non-contact measurement functionality.
 
   Components:
-    * ATiny85 Microcontroller
-    * HC-SR04 Ultrasonic Distance Sensor
-    * 74HC595 8-bit Shift Register (Qty 2)
-    * 7-Segement LED Display (Qty 2)
-    * 0.1uF Ceramic Capacitor
-    * 100uF Electrolytic Capacitor
-    * 5V Power Supply
+      ATiny85 Microcontroller
+      HC-SR04 Ultrasonic Distance Sensor
+      74HC595 8-bit Shift Register (Qty 2)
+      7-Segement LED Display (Qty 2)
+      0.1uF Ceramic Capacitor
+      100uF Electrolytic Capacitor
+      5V Power Supply
 
 */
 
@@ -27,11 +33,15 @@
 
 /* Global variables */
 byte numArray[30];    // 7-Segement LED Digit Definition
-
+byte startArray[24];  // Fun startup LED dance sequence
+bool units;           // True = SI, False = Imperial
+int state;            // State flag to trigger units change
 /*
    SETUP
 */
 void setup() {
+
+  state = 0;
 
   // pinMode(led, OUTPUT);
   pinMode(trigPin, OUTPUT);
@@ -53,6 +63,31 @@ void setup() {
      0b00000000
        ABCDEFGH
   */
+  startArray[0] = 0b11101111;
+  startArray[1] = 0b11111111;
+  startArray[2] = 0b11111111;
+  startArray[3] = 0b11101111;
+  startArray[4] = 0b11111111;
+  startArray[5] = 0b11011111;
+  startArray[6] = 0b11111111;
+  startArray[7] = 0b10111111;
+  startArray[8] = 0b11111111;
+  startArray[9] = 0b01111111;
+  startArray[10] = 0b01111111;
+  startArray[11] = 0b11111111;
+  startArray[12] = 0b11111011;
+  startArray[13] = 0b11111111;
+  startArray[14] = 0b11110111;
+  startArray[15] = 0b11111111;
+  startArray[16] = 0b00000011;
+  startArray[17] = 0b00000011;
+  startArray[18] = 0b11111111;
+  startArray[19] = 0b11111111;
+  startArray[20] = 0b00000011;
+  startArray[21] = 0b00000011;
+  startArray[22] = 0b11111111;
+  startArray[23] = 0b11111111;
+
   numArray[0] = 0b00000011; // no decimal 0-9
   numArray[1] = 0b10011111;
   numArray[2] = 0b00100101;
@@ -88,8 +123,12 @@ void setup() {
     digitalWrite(latchPin, 1);
     delay(200);
   }
+  // Fancy LED Dance
+  showStart();
 
-  //analogWrite(led, 0);
+  // Display Unit
+  units = false;
+  showUnits();
 }
 
 /*
@@ -113,80 +152,183 @@ void loop() {
     delay(10);
   }
   distance = (minduration / 2) / 29.1; // to cm
-  distance = distance / 2.54; // cm to inches
-  
-  // inches
-  if (distance < 12.0) {
-    // Buidl output - ab
-    b = distance % 10;              // ones
-    a = ((distance - b) / 10) % 10; // tens
-    if (distance < 10.0 && a == 0) {
-      a = 10;
+
+  if (units) {
+    // SI Units - cm and meters
+    if (distance < 100) {
+      // Buidl output - ab
+      b = distance % 10;              // ones
+      a = ((distance - b) / 10) % 10; // tens
+      if (distance < 10.0 && a == 0) {
+        a = 10;
+      }
+    }
+    // meters with decimal
+    if (distance >= 100.0 && distance < (100.0 * 10)) {
+      long d = (distance / 100.0) * 10;
+      // Buidl output - ab
+      b = d % 10;              // ones
+      a = ((d - b) / 10) % 10; // tens
+      if (a == 0) {
+        a = 10;
+      }
+      a = a + 20; // add decimal point
+    }
+    // meters only > 10m
+    if (distance >= (100.0 * 10)) {
+      long d = (distance / 100.0);
+      // Buidl output - ab
+      b = d % 10;              // ones
+      a = ((d - b) / 10) % 10; // tens
+      b = b + 20;
     }
   }
-  // feet with decimal
-  if (distance >= 12.0 && distance < (12.0 * 10)) {
-    long d = (distance / 12.0) * 10;
-    // Buidl output - ab
-    b = d % 10;              // ones
-    a = ((d - b) / 10) % 10; // tens
-    if (a == 0) {
-      a = 10;
+
+  if (!units) {
+    // Imperial Units - inches and feet
+    distance = distance / 2.54; // cm to inches
+
+    // inches
+    if (distance < 12.0) {
+      // Buidl output - ab
+      b = distance % 10;              // ones
+      a = ((distance - b) / 10) % 10; // tens
+      if (distance < 10.0 && a == 0) {
+        a = 10;
+      }
     }
-    a = a + 20;
+    // feet with decimal
+    if (distance >= 12.0 && distance < (12.0 * 10)) {
+      long d = (distance / 12.0) * 10;
+      // Buidl output - ab
+      b = d % 10;              // ones
+      a = ((d - b) / 10) % 10; // tens
+      if (a == 0) {
+        a = 10;
+      }
+      a = a + 20; // add decimal point
+    }
+    // feet only >= 10 feet
+    if (distance >= (12.0 * 10)) {
+      long d = (distance / 12.0);
+      // Buidl output - ab
+      b = d % 10;              // ones
+      a = ((d - b) / 10) % 10; // tens
+      b = b + 20;
+    }
   }
-  // feet only >= 10 feet
-  if (distance >= (12.0 * 10)) {
-    long d = (distance / 12.0);
-    // Buidl output - ab
-    b = d % 10;              // ones
-    a = ((d - b) / 10) % 10; // tens
-    b = b + 20;
-  }
+
   digitalWrite(latchPin, 0);
   sendOut(dataPin, clockPin, 0b11111111 - numArray[a]);
   sendOut(dataPin, clockPin, 0b11111111 - numArray[b]);
   digitalWrite(latchPin, 1);
 
+  // Check for trigger to change units
+  if (a == 10 && b == 4) {
+    state++;
+    if (state > 5) {
+      state = 0;
+      // Trigger happened - switch to other units.
+      if (units) {
+        units = false;
+      }
+      else {
+        units = true;
+      }
+      showStart();
+      showUnits();
+    }
+  }
+  else {
+    state = 0;
+  }
+
   delay(250);
 }
 
+/*
+   Send myDataOut to 8 bit register
+
+   This sifts 8 bits out MSB first on the rising edge of the clock
+*/
 void sendOut(int myDataPin, int myClockPin, byte myDataOut) {
-  // This shifts 8 bits out MSB first,
-  // on the rising edge of the clock,
-  // clock idles low
-  //internal function setup
   int i = 0;
   int pinState;
   pinMode(myClockPin, OUTPUT);
   pinMode(myDataPin, OUTPUT);
-  // clear everything out just in case to
-  // prepare shift register for bit shifting
+
+  // Clear data and clock output
   digitalWrite(myDataPin, 0);
   digitalWrite(myClockPin, 0);
-  // for each bit in the byte myDataOut�
-  // NOTICE THAT WE ARE COUNTING DOWN in our for loop
-  // This means that %00000001 or "1" will go through such
-  // that it will be pin Q0 that lights.
+  // Send each bit in the byte myDataOut
+
   for (i = 7; i >= 0; i--)  {
     digitalWrite(myClockPin, 0);
-    // if the value passed to myDataOut and a bitmask result
-    // true then... so if we are at i=6 and our value is
-    // %11010100 it would the code compares it to %01000000
-    // and proceeds to set pinState to 1.
     if ( myDataOut & (1 << i) ) {
       pinState = 1;
     }
     else {
       pinState = 0;
     }
-    //Sets the pin to HIGH or LOW depending on pinState
+    // Send pinState
     digitalWrite(myDataPin, pinState);
-    //register shifts bits on upstroke of clock pin
+
+    // Shift register with Clock
     digitalWrite(myClockPin, 1);
-    //zero the data pin after shift to prevent bleed through
+    // Zero out data pin
     digitalWrite(myDataPin, 0);
   }
-  //stop shifting
   digitalWrite(myClockPin, 0);
+}
+
+/*
+   Display "c" for SI unit mode and "in" for Imperial unit mode
+
+   Uses: global bool "units"
+*/
+void showUnits() {
+  for (int x = 0; x < 2; x++) {
+    if (units) {
+      // SI = Display " c"
+      digitalWrite(latchPin, 0);
+      sendOut(dataPin, clockPin, 0b11111111 - 0b11111111);
+      sendOut(dataPin, clockPin, 0b11111111 - 0b11100101);
+      digitalWrite(latchPin, 1);
+    }
+    else {
+      // Imperial = Display "in"
+      digitalWrite(latchPin, 0);
+      sendOut(dataPin, clockPin, 0b11111111 - 0b11011111);
+      sendOut(dataPin, clockPin, 0b11111111 - 0b11010101);
+      digitalWrite(latchPin, 1);
+    }
+    delay(500);
+
+    // Clear
+    digitalWrite(latchPin, 0);
+    sendOut(dataPin, clockPin, 0b11111111 - 0b11111111);
+    sendOut(dataPin, clockPin, 0b11111111 - 0b11111111);
+    digitalWrite(latchPin, 1);
+    delay(500);
+  }
+}
+
+/*
+   Display starup LED dance and flash "00"
+*/
+void showStart() {
+  for (int x = 0; x <= 14; x = x + 2) {
+    digitalWrite(latchPin, 0);
+    sendOut(dataPin, clockPin, 0b11111111 - startArray[x]);
+    sendOut(dataPin, clockPin, 0b11111111 - startArray[x + 1]);
+    digitalWrite(latchPin, 1);
+    delay(50);
+  }
+  for (int x = 0; x <= 22; x = x + 2) {
+    digitalWrite(latchPin, 0);
+    sendOut(dataPin, clockPin, 0b11111111 - startArray[x]);
+    sendOut(dataPin, clockPin, 0b11111111 - startArray[x + 1]);
+    digitalWrite(latchPin, 1);
+    delay(40);
+  }
 }
