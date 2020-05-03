@@ -4,7 +4,7 @@
   This project uses the HC-SR04 ultrasonic distance module to determine distance
   an provide output via two 7-segment display.  In Imperial unit mode, it will show inches
   for short distances less than 1 foot, then it will show feet with decimal until the distance
-  reaches 10 feet and will continue to show feet.  In SI unit mode, it will show centimeters
+  reaches 10 feet and will continue to show feet.  In SI uit mode, it will show centimeters
   for distances less than 1 meter, then it will show meters with decimal until the distance
   reaches 10 meters and will continue to show meters only.
 
@@ -22,6 +22,10 @@
       100uF Electrolytic Capacitor
       5V Power Supply
 
+  Author: Jason A. Cox - @jasonacox - https://github.com/jasonacox/UltrasonicDistanceDisplay
+
+  Date: 5 May 2020 
+  
 */
 
 /* ATtiny85 Pins */
@@ -31,17 +35,30 @@
 #define latchPin 3    // Pin connected to ST_CP of 74HC595
 #define echoPin 4     // Pin connected to ECHO  of HC-SR04
 
+/* Sleep Settings */
+#define SENSITIVITY 2           // Distance tolerance (inches) to sleep/wake up (-1 to disable)
+#define MAX (1000L/250L)*60L    // Go to sleep mode if distance static for this amount
+#define SLEEP 500               // Sleep mode wait
+#define WAIT 250                // Wake mode wait
+
 /* Global variables */
-byte numArray[30];    // 7-Segement LED Digit Definition
-byte startArray[24];  // Fun startup LED dance sequence
+byte numArray[31];    // 7-Segement LED Digit Definition
+byte startArray[24];  // Fancy startup LED sequence
 bool units;           // True = SI, False = Imperial
+bool sleepmode;       // True = LED off and longer wait between measures
 int state;            // State flag to trigger units change
+long lastdist;        // Last measured distance
+long nochange;        // Cycles with no change
+
 /*
    SETUP
 */
 void setup() {
 
   state = 0;
+  lastdist = 0;
+  nochange = 0L;
+  sleepmode = false;
 
   // pinMode(led, OUTPUT);
   pinMode(trigPin, OUTPUT);
@@ -109,7 +126,8 @@ void setup() {
   numArray[27] = 0b00011110;
   numArray[28] = 0b00000000;
   numArray[29] = 0b00001000;
-
+  numArray[30] = 0b11111110;
+  
   // Flash Decimal on Boot
   for (int x = 0; x < 4; x++) {
     digitalWrite(latchPin, 0);
@@ -140,7 +158,7 @@ void loop() {
   long duration, distance;
   long minduration = -1;
   int a, b;
-  for (int x = 1; x < 5; x++) { // make 4 measurements
+  for (int x = 0; x < 5; x++) { // make 5 measurements
     digitalWrite(trigPin, LOW);
     delayMicroseconds(2);
     digitalWrite(trigPin, HIGH);
@@ -149,7 +167,7 @@ void loop() {
     duration = pulseIn(echoPin, HIGH);
     if (minduration < 0) minduration = duration;
     if (duration < minduration) minduration = duration;
-    delay(10);
+    delay(20);
   }
   distance = (minduration / 2) / 29.1; // to cm
 
@@ -183,11 +201,12 @@ void loop() {
       b = b + 20;
     }
   }
+  
+  distance = distance / 2.54; // cm to inches
 
   if (!units) {
     // Imperial Units - inches and feet
-    distance = distance / 2.54; // cm to inches
-
+    
     // inches
     if (distance < 12.0) {
       // Buidl output - ab
@@ -218,32 +237,58 @@ void loop() {
     }
   }
 
-  digitalWrite(latchPin, 0);
-  sendOut(dataPin, clockPin, 0b11111111 - numArray[a]);
-  sendOut(dataPin, clockPin, 0b11111111 - numArray[b]);
-  digitalWrite(latchPin, 1);
-
-  // Check for trigger to change units
-  if (a == 10 && b == 4) {
-    state++;
-    if (state > 5) {
-      state = 0;
-      // Trigger happened - switch to other units.
-      if (units) {
-        units = false;
-      }
-      else {
-        units = true;
-      }
-      showStart();
-      showUnits();
+  if (sleepmode == true) {
+    if (abs(lastdist - distance) > SENSITIVITY) {
+      sleepmode = false;
+      nochange = 0;
     }
   }
-  else {
-    state = 0;
+
+  if (sleepmode == false) {
+    digitalWrite(latchPin, 0);
+    sendOut(dataPin, clockPin, 0b11111111 - numArray[a]);
+    sendOut(dataPin, clockPin, 0b11111111 - numArray[b]);
+    digitalWrite(latchPin, 1);
+
+    // Check for trigger to change units
+    if (a == 10 && b == 4) {
+      state++;
+      if (state > 5) {
+        state = 0;
+        // Trigger happened - switch to other units.
+        if (units) {
+          units = false;
+        }
+        else {
+          units = true;
+        }
+        showStart();
+        showUnits();
+      }
+    }
+    else {
+      state = 0;
+    }
+    if (abs(lastdist - distance) <= SENSITIVITY) {
+      nochange++;
+      if (nochange >= MAX) {
+        // Go into sleep mode - turn off display
+        digitalWrite(latchPin, 0);
+        sendOut(dataPin, clockPin, 0b11111111 - 0b11111111);
+        sendOut(dataPin, clockPin, 0b11111111 - 0b11111111);
+        digitalWrite(latchPin, 1);
+        sleepmode = true;
+      }
+    }
   }
 
-  delay(250);
+  lastdist = distance;
+  if (sleepmode == true) {
+    delay(SLEEP);
+  }
+  else {
+    delay(250);
+  }
 }
 
 /*
@@ -329,6 +374,7 @@ void showStart() {
     sendOut(dataPin, clockPin, 0b11111111 - startArray[x]);
     sendOut(dataPin, clockPin, 0b11111111 - startArray[x + 1]);
     digitalWrite(latchPin, 1);
-    delay(40);
+    delay(50);
   }
+  delay(100);
 }
