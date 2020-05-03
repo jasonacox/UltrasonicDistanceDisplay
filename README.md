@@ -15,8 +15,10 @@ To toggle Units:  Hold the distance to 4 (either unit) for ~4 seconds and it wil
 Sleep Mode: The code includes logic to turn off the display when
 there is no movement and power back on when movement is detected.
 
+## Circuit
+A Kicad schematic is included in this project and the schematic export is listed below. The circuit is powered with a steady 5V DC supply (e.g. USB adapter).  The HC-SR04 is an entry level sensor and does suffer from some fluctuation. Logic in the code attemps to stablize the measures by making multiple readings.
 
-Components:
+### Components:
 * ATiny85 Microcontroller
 * HC-SR04 Ultrasonic Distance Sensor
 * 74HC595 8-bit Shift Register (Qty 2)
@@ -24,9 +26,6 @@ Components:
 * 0.1uF Ceramic Capacitor
 * 100uF Electrolytic Capacitor
 * 5V Power Supply
-
-## Circuit
-A (Kicad schematic)[kicad/] is included in this project and the schematic export is listed below. The circuit is powered with a steady 5V DC supply (e.g. USB adapter).  The HC-SR04 is an entry level sensor and does suffer from some fluctuation. Logic in the code attemps to stablize the measures by making multiple readings.
 
 ### Schematic
 ![Circuit Board](images/schematic.png)
