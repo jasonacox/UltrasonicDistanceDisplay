@@ -32,12 +32,12 @@ Note: Currently the circuit prototype is being tested.
 
 ## List of Materials
 #### Integrated Circuits
-* 1 x ATiny85 Microcontroller
-* 2 x 74HC595 8-bit Shift Register
+* 1 x ATiny85 Microcontroller [DigiKey](https://www.digikey.com/product-detail/en/microchip-technology/ATTINY85-20PU/ATTINY85-20PU-ND/735469)
+* 2 x 74HC595 8-bit Shift Register [DigiKey](https://www.digikey.com/product-detail/en/texas-instruments/SN74HC595N/296-1600-5-ND/277246)
 #### Sensors
-* 1 x HC-SR04 Ultrasonic Distance Sensor
+* 1 x HC-SR04 Ultrasonic Distance Sensor [DigiKey](https://www.digikey.com/product-detail/en/adafruit-industries-llc/3942/1528-2711-ND/9658069)
 #### Display/LED
-* 2 x 7-Segement LED Display
+* 2 x 7-Segement LED Display [DigiKey](https://www.digikey.com/product-detail/en/inolux/INND-TS56RCB/1830-1161-ND/7604995)
 #### Power Supply
 * 5V Power Supply
 #### Misc
