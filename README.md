@@ -27,6 +27,9 @@ Note: Currently the circuit prototype is being tested.
 ### Schematic
 ![Circuit Board](images/schematic.png)
 
+#### ATtiny85 Pins
+![Circuit Board](images/ATtiny85pins.png)
+
 ## List of Materials
 #### Integrated Circuits
 * 1 x ATiny85 Microcontroller
