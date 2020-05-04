@@ -80,67 +80,69 @@ void setup() {
      0b00000000
        ABCDEFGH
   */
-  startArray[0] = 0b11101111;
-  startArray[1] = 0b11111111;
-  startArray[2] = 0b11111111;
-  startArray[3] = 0b11101111;
-  startArray[4] = 0b11111111;
-  startArray[5] = 0b11011111;
-  startArray[6] = 0b11111111;
-  startArray[7] = 0b10111111;
-  startArray[8] = 0b11111111;
-  startArray[9] = 0b01111111;
-  startArray[10] = 0b01111111;
-  startArray[11] = 0b11111111;
-  startArray[12] = 0b11111011;
-  startArray[13] = 0b11111111;
-  startArray[14] = 0b11110111;
-  startArray[15] = 0b11111111;
-  startArray[16] = 0b00000011;
-  startArray[17] = 0b00000011;
-  startArray[18] = 0b11111111;
-  startArray[19] = 0b11111111;
-  startArray[20] = 0b00000011;
-  startArray[21] = 0b00000011;
-  startArray[22] = 0b11111111;
-  startArray[23] = 0b11111111;
+  numArray[0] = 0b11111100; // 0
+  numArray[1] = 0b01100000; // 1
+  numArray[2] = 0b11011010; // 2
+  numArray[3] = 0b11110010; // 3
+  numArray[4] = 0b01100110; // 4
+  numArray[5] = 0b10110110; // 5
+  numArray[6] = 0b10111110; // 6
+  numArray[7] = 0b11100000; // 7
+  numArray[8] = 0b11111110; // 8
+  numArray[9] = 0b11110110; // 9
+  numArray[10]= 0b00000000; // All Off
+  numArray[20] = 0b11111101; // 0. (Decimal point)
+  numArray[21] = 0b01100001; // 1.
+  numArray[22] = 0b11011011; // 2.
+  numArray[23] = 0b11110011; // 3.
+  numArray[24] = 0b01100111; // 4.
+  numArray[25] = 0b10110111; // 5.
+  numArray[26] = 0b10111111; // 6.
+  numArray[27] = 0b11100001; // 7.
+  numArray[28] = 0b11111111; // 8.
+  numArray[29] = 0b11110111; // 9.
+  numArray[30] = 0b00000001; // . (Decimal point only)
 
-  numArray[0] = 0b00000011; // no decimal 0-9
-  numArray[1] = 0b10011111;
-  numArray[2] = 0b00100101;
-  numArray[3] = 0b00001101;
-  numArray[4] = 0b10011001;
-  numArray[5] = 0b01001001;
-  numArray[6] = 0b01000001;
-  numArray[7] = 0b00011111;
-  numArray[8] = 0b00000001;
-  numArray[9] = 0b00001001;
-  numArray[10] = 0b11111111; // all off
-  numArray[20] = 0b00000010; // decimal on 20-29
-  numArray[21] = 0b10011110;
-  numArray[22] = 0b00100100;
-  numArray[23] = 0b00001100;
-  numArray[24] = 0b10011000;
-  numArray[25] = 0b01001000;
-  numArray[26] = 0b01000000;
-  numArray[27] = 0b00011110;
-  numArray[28] = 0b00000000;
-  numArray[29] = 0b00001000;
-  numArray[30] = 0b11111110;
+  // Startup LED Dance Sequence
+  startArray[0] = 0b00010000;
+  startArray[1] = 0b00000000;
+  startArray[2] = 0b00000000;
+  startArray[3] = 0b00010000;
+  startArray[4] = 0b00000000;
+  startArray[5] = 0b00100000;
+  startArray[6] = 0b00000000;
+  startArray[7] = 0b01000000;
+  startArray[8] = 0b00000000;
+  startArray[9] = 0b10000000;
+  startArray[10] = 0b10000000;
+  startArray[11] = 0b00000000;
+  startArray[12] = 0b00000100;
+  startArray[13] = 0b00000000;
+  startArray[14] = 0b00001000;
+  startArray[15] = 0b00000000;
+  startArray[16] = 0b11111100; 
+  startArray[17] = 0b11111100;
+  startArray[18] = 0b00000000;
+  startArray[19] = 0b00000000;
+  startArray[20] = 0b11111100;
+  startArray[21] = 0b11111100;
+  startArray[22] = 0b00000000;
+  startArray[23] = 0b00000000;
   
   // Flash Decimal on Boot
   for (int x = 0; x < 4; x++) {
     digitalWrite(latchPin, 0);
-    sendOut(dataPin, clockPin, 0b11111111 - 0b11111111);
-    sendOut(dataPin, clockPin, 0b11111111 - 0b11111110);
+    sendOut(dataPin, clockPin, 0b00000000);
+    sendOut(dataPin, clockPin, 0b00000001);
     digitalWrite(latchPin, 1);
     delay(200);
     digitalWrite(latchPin, 0);
-    sendOut(dataPin, clockPin, 0b11111111 - 0b11111110);
-    sendOut(dataPin, clockPin, 0b11111111 - 0b11111111);
+    sendOut(dataPin, clockPin, 0b00000001);
+    sendOut(dataPin, clockPin, 0b00000000);
     digitalWrite(latchPin, 1);
     delay(200);
   }
+  
   // Fancy LED Dance
   showStart();
 
@@ -246,8 +248,8 @@ void loop() {
 
   if (sleepmode == false) {
     digitalWrite(latchPin, 0);
-    sendOut(dataPin, clockPin, 0b11111111 - numArray[a]);
-    sendOut(dataPin, clockPin, 0b11111111 - numArray[b]);
+    sendOut(dataPin, clockPin, numArray[a]);
+    sendOut(dataPin, clockPin, numArray[b]);
     digitalWrite(latchPin, 1);
 
     // Check for trigger to change units
@@ -274,8 +276,8 @@ void loop() {
       if (nochange >= MAX) {
         // Go into sleep mode - turn off display
         digitalWrite(latchPin, 0);
-        sendOut(dataPin, clockPin, 0b11111111 - 0b11111111);
-        sendOut(dataPin, clockPin, 0b11111111 - 0b11111111);
+        sendOut(dataPin, clockPin, 0b00000000);
+        sendOut(dataPin, clockPin, 0b00000000);
         digitalWrite(latchPin, 1);
         sleepmode = true;
       }
@@ -336,23 +338,23 @@ void showUnits() {
     if (units) {
       // SI = Display " c"
       digitalWrite(latchPin, 0);
-      sendOut(dataPin, clockPin, 0b11111111 - 0b11111111);
-      sendOut(dataPin, clockPin, 0b11111111 - 0b11100101);
+      sendOut(dataPin, clockPin, 0b00000000);
+      sendOut(dataPin, clockPin, 0b00011010);
       digitalWrite(latchPin, 1);
     }
     else {
       // Imperial = Display "in"
       digitalWrite(latchPin, 0);
-      sendOut(dataPin, clockPin, 0b11111111 - 0b11011111);
-      sendOut(dataPin, clockPin, 0b11111111 - 0b11010101);
+      sendOut(dataPin, clockPin, 0b00100000);
+      sendOut(dataPin, clockPin, 0b00101010);
       digitalWrite(latchPin, 1);
     }
     delay(500);
 
     // Clear
     digitalWrite(latchPin, 0);
-    sendOut(dataPin, clockPin, 0b11111111 - 0b11111111);
-    sendOut(dataPin, clockPin, 0b11111111 - 0b11111111);
+    sendOut(dataPin, clockPin, 0b00000000);
+    sendOut(dataPin, clockPin, 0b00000000);
     digitalWrite(latchPin, 1);
     delay(500);
   }
@@ -364,15 +366,15 @@ void showUnits() {
 void showStart() {
   for (int x = 0; x <= 14; x = x + 2) {
     digitalWrite(latchPin, 0);
-    sendOut(dataPin, clockPin, 0b11111111 - startArray[x]);
-    sendOut(dataPin, clockPin, 0b11111111 - startArray[x + 1]);
+    sendOut(dataPin, clockPin, startArray[x]);
+    sendOut(dataPin, clockPin, startArray[x + 1]);
     digitalWrite(latchPin, 1);
     delay(50);
   }
   for (int x = 0; x <= 22; x = x + 2) {
     digitalWrite(latchPin, 0);
-    sendOut(dataPin, clockPin, 0b11111111 - startArray[x]);
-    sendOut(dataPin, clockPin, 0b11111111 - startArray[x + 1]);
+    sendOut(dataPin, clockPin, startArray[x]);
+    sendOut(dataPin, clockPin, startArray[x + 1]);
     digitalWrite(latchPin, 1);
     delay(50);
   }
